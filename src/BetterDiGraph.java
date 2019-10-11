@@ -1,6 +1,23 @@
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
+/**
+ * Implementation of EditableDiGraph utilizing HashMaps.
+ *
+ * @author Hoang, Acuna
+ */
 public class BetterDiGraph implements EditableDiGraph {
+    private int V;
+    private int E;
+    private HashMap<Integer, LinkedList<Integer>> adj;
+
+    public BetterDiGraph() {
+        this.V = 0;
+        this.E = 0;
+        this.adj = new HashMap<>();
+    }
+
     /**
      * Adds an edge between two vertices, v and w. If vertices do not exist,
      * adds them first.
@@ -10,7 +27,16 @@ public class BetterDiGraph implements EditableDiGraph {
      */
     @Override
     public void addEdge(int v, int w) {
+        if (!adj.containsKey(v)) {
+            addVertex(v);
+        }
 
+        if (!adj.containsKey(w)) {
+            addVertex(w);
+        }
+
+        adj.get(v).push(w);
+        E++;
     }
 
     /**
@@ -20,7 +46,10 @@ public class BetterDiGraph implements EditableDiGraph {
      */
     @Override
     public void addVertex(int v) {
-
+        if (!adj.containsKey(v)) {
+            adj.put(v, new LinkedList<>());
+            V++;
+        }
     }
 
     /**
@@ -31,7 +60,7 @@ public class BetterDiGraph implements EditableDiGraph {
      */
     @Override
     public Iterable<Integer> getAdj(int v) {
-        return null;
+        return adj.get(v);
     }
 
     /**
@@ -41,7 +70,7 @@ public class BetterDiGraph implements EditableDiGraph {
      */
     @Override
     public int getEdgeCount() {
-        return 0;
+        return this.E;
     }
 
     /**
@@ -53,7 +82,21 @@ public class BetterDiGraph implements EditableDiGraph {
      */
     @Override
     public int getIndegree(int v) throws NoSuchElementException {
-        return 0;
+        if (!adj.containsKey(v)) {
+            throw new NoSuchElementException();
+        }
+
+        int count = 0;
+
+        for (Integer i : vertices()) {
+            if (i != v) {
+                if (adj.get(i).contains(v)) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 
     /**
@@ -63,7 +106,7 @@ public class BetterDiGraph implements EditableDiGraph {
      */
     @Override
     public int getVertexCount() {
-        return 0;
+        return this.V;
     }
 
     /**
@@ -74,7 +117,16 @@ public class BetterDiGraph implements EditableDiGraph {
      */
     @Override
     public void removeEdge(int v, int w) {
+        if (!adj.containsKey(v)) {
+            return;
+        }
 
+        LinkedList source = adj.get(v);
+        int index = source.indexOf(w);
+        if (index != -1) {
+            source.remove(index);
+            E--;
+        }
     }
 
     /**
@@ -85,7 +137,21 @@ public class BetterDiGraph implements EditableDiGraph {
      */
     @Override
     public void removeVertex(int v) {
+        if (!adj.containsKey(v)) {
+            return;
+        }
 
+        for (Integer i : adj.keySet()) {
+            if (i != v) {
+                int destIndex = adj.get(i).indexOf(v);
+                if (destIndex != -1) {
+                    removeEdge(i, v);
+                }
+            }
+        }
+
+        adj.remove(v);
+        V--;
     }
 
     /**
@@ -95,6 +161,6 @@ public class BetterDiGraph implements EditableDiGraph {
      */
     @Override
     public Iterable<Integer> vertices() {
-        return null;
+        return adj.keySet();
     }
 }
